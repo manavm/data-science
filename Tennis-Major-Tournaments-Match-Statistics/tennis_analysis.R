@@ -1,36 +1,28 @@
-```{r global_options, include=FALSE}
 library(knitr)
-opts_chunk$set(fig.align="center", fig.height=3, fig.width=4)
+opts_chunk$set(fig.align="center", fig.height=4, fig.width=5)
 library(ggplot2)
 theme_set(theme_bw(base_size=12))
-library(tidyr)
 library(dplyr)
+library(tidyr)
 library(grid)
-```
 
-```{r}
-data = read.csv("datasets/OnlineNewsPopularity/OnlineNewsPopularity.csv", header = TRUE)
-data %>% gather(day, count, weekday_is_monday:weekday_is_sunday) %>% head(15) -> data_days
-data_days %>% select(-count) -> data
-
-head(data, 2)
-```
-
-Principal-Component Analysis
-
-```{r, echo=FALSE}
+data = read.csv("Tennis-Major-Tournaments-Match-Statistics/data/FrenchOpen-men-2013.csv", header = TRUE)
+head(data)
 
 # Delete columns with unit variance
 data[,sapply(data, function(v) var(v, na.rm=TRUE)!=0)] -> data
 
-# Perform PCA
-data %>% select(-url) %>% scale() %>% prcomp() -> pca
+na.omit(data)
 
-head(pca$x)  
+# Perform PCA
+na.omit(data) %>% select(-Player1, -Player2) %>% scale() %>% prcomp() -> pca
+
+head(pca$x)
 
 rotation_data <- data.frame(pca$rotation, variable=row.names(pca$rotation))
 arrow_style <- arrow(length = unit(0.05, "inches"),
                      type = "closed")
+
 ggplot(rotation_data) + 
   geom_segment(aes(xend=PC1, yend=PC2), x=0, y=0, arrow=arrow_style) + 
   geom_text(aes(x=PC1, y=PC2, label=variable), hjust=0, size=3, color='red') + 
@@ -49,6 +41,4 @@ ggplot(perc_data, aes(x=PC, y=percent, fill=percent)) +
   geom_bar(stat="identity") + 
   geom_text(aes(label=round(percent, 2)), size=4, vjust=-.5) + 
   ylim(0, 80)
-```
-
 

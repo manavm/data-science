@@ -1,2 +1,5 @@
-.DS_Store
 *.html
+### OSX ###
+.DS_Store
+.AppleDouble
+.LSOverride

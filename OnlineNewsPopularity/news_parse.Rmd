@@ -1,0 +1,77 @@
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=3, fig.width=4)
+library(ggplot2)
+theme_set(theme_bw(base_size=12))
+library(tidyr)
+library(dplyr)
+library(grid)
+```
+
+```{r}
+  orig_data = read.csv("OnlineNewsPopularity/OnlineNewsPopularity.csv", header = TRUE)
+orig_data %>% gather(day, count, weekday_is_monday:weekday_is_sunday) %>% head(15) -> data_days
+data_days %>% select(-count) -> data
+
+head(data, 2)
+```
+
+Principal-Component Analysis
+
+```{r, echo=FALSE}
+
+# Delete columns with unit variance
+data[,sapply(data, function(v) var(v, na.rm=TRUE)!=0)] -> data
+
+# Perform PCA
+data %>% select(-url) %>% scale() %>% prcomp() -> pca
+
+head(pca$x)  
+
+rotation_data <- data.frame(pca$rotation, variable=row.names(pca$rotation))
+arrow_style <- arrow(length = unit(0.05, "inches"),
+                     type = "closed")
+ggplot(rotation_data) + 
+  geom_segment(aes(xend=PC1, yend=PC2), x=0, y=0, arrow=arrow_style) + 
+  geom_text(aes(x=PC1, y=PC2, label=variable), hjust=0, size=3, color='red') + 
+  xlim(-.5,.5) + 
+  ylim(-.5,.25) +
+  coord_fixed()
+
+
+# Percentage of variance explained
+
+percent <- 100*pca$sdev^2/sum(pca$sdev^2)
+percent
+
+perc_data <- data.frame(percent=percent, PC=1:length(percent))
+ggplot(perc_data, aes(x=PC, y=percent, fill=percent)) + 
+  geom_bar(stat="identity") + 
+  geom_text(aes(label=round(percent, 2)), size=4, vjust=-.5) + 
+  ylim(0, 80)
+```
+
+Logistic Regression
+
+```{r}
+
+glm.out <- lm(day ~ timedelta + n_tokens_title + n_tokens_content + n_unique_tokens + n_non_stop_words + n_non_stop_unique_tokens + num_hrefs + num_self_hrefs + num_imgs + num_videos + average_token_length + num_keywords + data_channel_is_lifestyle + data_channel_is_entertainment + data_channel_is_bus + data_channel_is_socmed + data_channel_is_tech + data_channel_is_world + kw_min_min + kw_max_min + kw_avg_min + kw_min_max + kw_max_max + kw_avg_max + kw_min_avg + kw_max_avg + kw_avg_avg + self_reference_min_shares + self_reference_max_shares + self_reference_avg_sharess + is_weekend + LDA_00 + LDA_01 + LDA_02 + LDA_03 + LDA_04 + global_subjectivity + global_sentiment_polarity + global_rate_positive_words + global_rate_negative_words + rate_positive_words + rate_negative_words + avg_positive_polarity + min_positive_polarity + max_positive_polarity + avg_negative_polarity + min_negative_polarity + max_negative_polarity + title_subjectivity + title_sentiment_polarity + abs_title_subjectivity + abs_title_sentiment_polarity,
+               data = data_days) # family = binomial required for logistic regression
+summary(glm.out)
+
+```
+
+K-means
+
+```{r}
+# Delete columns with unit variance
+data[,sapply(data, function(v) var(v, na.rm=TRUE)!=0)] -> data
+
+# Perform PCA
+data %>% select(-url) %>% kmeans(centers=5) -> km
+km
+
+km$centers
+```
+
+
