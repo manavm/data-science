@@ -51,7 +51,7 @@ else:
 			config_file=a
 		    
 
-# config_file = "./extended_rainflow/input/config/rainflow_analysis_config_test_2.json"
+# config_file = "./analysis/rainflow_analysis_config.json"
 
 config = json.loads(open(config_file, 'r').read())
 print config
@@ -116,8 +116,6 @@ if config["skip_signal"] is False:
 		# Just for testing to be removed 
 		if config["save_signal"]:
 			sig_df_vect.append(sig_df)
-		# print sig_df.shape
-		# print sig_df.head()
 
 		### APPLY RAINFLOW ####
 
@@ -131,8 +129,6 @@ if config["skip_signal"] is False:
 
 		# Here's the problem it seems that norm_matrix and
 		# Computed Matrix is the same
-		#print norm_matrix
-		#print computed_matrix
 		
 
 		# Append the computed matrix to the dict
@@ -172,15 +168,6 @@ results['dist_params'] = my_dist.theta
 results['95th_perc'] = my_dist.rv.ppf(0.95)
 results['out_vector'] =  sum_out_vector
 
-
-# Here I'm trying to fit the distribution to the norm_outv_vector
-# But is oddily the same as the other stuff.
-# Need to debug
-# field_cycle_dist = sb.dist(X=norm_out_vector)
-# results['field_cycle_dist_name']= field_cycle_dist.distName 
-# results['field_cycle_dist_params'] = field_cycle_dist.theta
-# results['field_cycle_95th_perc'] = field_cycle_dist.rv.ppf(0.95)
-# results['field_cycle_out_vector'] =  norm_out_vector
 
 # Prints results
 for k,v in results.iteritems():
